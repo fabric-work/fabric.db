@@ -1,0 +1,10 @@
+[package]
+name = "fabric-control-plane"
+description = "Policy engine, trust graph and schema governance for fabric.db"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+uuid = { workspace = true }

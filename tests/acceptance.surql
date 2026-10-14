@@ -154,6 +154,8 @@ SELECT count() AS count FROM provenance WHERE id = provenance:test AND tool = to
 SELECT count() AS count FROM desired_state WHERE id = desired_state:test AND version = 1 GROUP ALL;
 SELECT count() AS count FROM observed_state WHERE id = observed_state:test GROUP ALL;
 SELECT count() AS count FROM drift WHERE id = drift:test AND desired = desired_state:test AND observed = observed_state:test AND status = "open" GROUP ALL;
+-- Free-form object fields must keep their nested values (FLEXIBLE in a SCHEMAFULL table).
+RETURN [event:test.payload.decision, decision:test.context.test, decision:test.selected_option.name, decision:test.policy_result.policy, decision:test.outcome.status, desired_state:test.spec.replicas, observed_state:test.state.replicas, drift:test.diff.field];
 RETURN fn::risk_weight("critical");
 RETURN fn::risk_weight("high");
 RETURN fn::risk_weight("medium");

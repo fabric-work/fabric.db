@@ -12,7 +12,7 @@ permissions:
   packages: write
 
 env:
-  IMAGE_NAME: ghcr.io/fabric-db/fabric.db
+  IMAGE_NAME: ghcr.io/${{ github.repository }}
 
 jobs:
   publish:

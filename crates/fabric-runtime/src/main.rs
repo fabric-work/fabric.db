@@ -4,6 +4,7 @@
 use axum::{routing::{get, post}, Json, Router};
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
+use std::sync::{Arc, Mutex};
 
 use fabric_control_plane::ControlPlane;
 use fabric_core::{FabricCore, Identity};
@@ -39,14 +40,14 @@ pub struct Health {
 #[derive(Clone)]
 pub struct RuntimeState {
     pub control_plane: ControlPlane,
-    pub core: std::sync::Mutex<FabricCore>,
+    pub core: Arc<Mutex<FabricCore>>,
 }
 
 impl RuntimeState {
     pub fn new() -> Self {
         Self {
             control_plane: ControlPlane::new(),
-            core: std::sync::Mutex::new(FabricCore::new()),
+            core: Arc::new(Mutex::new(FabricCore::new())),
         }
     }
 
@@ -115,8 +116,6 @@ async fn main() {
 
     println!("🚀 Fabric FULL Runtime (Control Plane + Core Wired) on {}", addr);
 
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }

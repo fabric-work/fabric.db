@@ -2,16 +2,18 @@
 members = [
   "crates/fabric-core",
   "crates/fabric-control-plane",
-  "crates/fabric-sdk",
   "crates/fabric-runtime"
 ]
+
+# Vendor-specific adapter: built on its own, not part of the core workspace.
+exclude = ["crates/anydb-adapter-surrealdb"]
 
 resolver = "2"
 
 [workspace.package]
-name = "fabric"
 version = "0.1.0"
 edition = "2021"
+license = "Apache-2.0"
 
 [workspace.dependencies]
 serde = { version = "1.0", features = ["derive"] }

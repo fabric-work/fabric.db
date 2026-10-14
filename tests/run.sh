@@ -53,7 +53,7 @@ done
 curl -fsS "http://127.0.0.1:${PORT}/health" >/dev/null || fail "database did not become healthy"
 
 sql() {
-  docker exec -i "$CONTAINER" surreal sql \
+  docker exec -i "$CONTAINER" /surreal sql \
     --endpoint http://127.0.0.1:8000 \
     --username "$USER" \
     --password "$PASS" \
@@ -64,7 +64,7 @@ sql() {
 
 import_file() {
   local path="$1"
-  docker exec "$CONTAINER" surreal import \
+  docker exec "$CONTAINER" /surreal import \
     --endpoint http://127.0.0.1:8000 \
     --username "$USER" \
     --password "$PASS" \
@@ -87,7 +87,7 @@ done
 
 log "Running governed-state acceptance scenario"
 docker cp tests/acceptance.surql "$CONTAINER:/tmp/fabric-acceptance.surql"
-ACCEPTANCE_OUT="$(docker exec "$CONTAINER" surreal import \
+ACCEPTANCE_OUT="$(docker exec "$CONTAINER" /surreal import \
   --endpoint http://127.0.0.1:8000 \
   --username "$USER" \
   --password "$PASS" \
@@ -111,6 +111,7 @@ SELECT * FROM observed_state:test;
 SELECT * FROM drift:test;
 RETURN fn::event_type("agent", "execute");
 RETURN fn::risk_weight("critical");
+RETURN [event:test.payload.decision, decision:test.context.test, decision:test.selected_option.name, decision:test.policy_result.policy, decision:test.outcome.status, desired_state:test.spec.replicas, observed_state:test.state.replicas, drift:test.diff.field];
 SQL
 )"
 
@@ -123,6 +124,7 @@ grep -q 'acceptance-suite' <<<"$CHECK_OUT" || fail "provenance fixture missing"
 grep -q 'replicas' <<<"$CHECK_OUT" || fail "desired/observed state fixture missing"
 grep -q 'open' <<<"$CHECK_OUT" || fail "drift fixture missing"
 grep -q '100' <<<"$CHECK_OUT" || fail "risk weighting helper failed"
+grep -qF "['decision:test', true, 'execute', 'policy:test', 'approved', 1, 0, 'replicas']" <<<"$CHECK_OUT" || fail "nested object fields were not kept"
 
 log "Testing persisted state across restart"
 docker restart "$CONTAINER" >/dev/null
